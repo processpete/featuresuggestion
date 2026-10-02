@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roofr CRM - Feature Suggestions Demo</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif; background: #f9fafb; color: #1f2937; }
+
+        .dashboard { display: flex; height: 100vh; overflow: hidden; }
+
+        /* SIDEBAR */
+        .sidebar { width: 244px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; overflow-y: auto; }
+        .sidebar-header { padding: 16px; border-bottom: 1px solid #e5e7eb; }
+        .company { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .avatar { width: 32px; height: 32px; background: linear-gradient(135deg, #4f46e5, #7c3aed); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 13px; }
+        .company-name { font-size: 12px; font-weight: 600; color: #1f2937; }
+        .company-email { font-size: 11px; color: #6b7280; }
+
+        .menu { flex: 1; overflow-y: auto; padding: 12px 0; }
+        .menu-section { padding: 8px 0; }
+        .menu-title { font-size: 10px; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; padding: 12px 16px 8px; }
+        .menu-item { display: flex; align-items: center; gap: 12px; padding: 8px 16px; color: #6b7280; cursor: pointer; font-size: 13px; border-left: 3px solid transparent; transition: all 0.15s; }
+        .menu-item:hover { background: #f3f4f6; color: #1f2937; }
+        .menu-item.active { background: #f3f4f6; color: #4f46e5; border-left-color: #4f46e5; font-weight: 500; }
+        .menu-icon { width: 18px; font-size: 16px; }
+        .beta { font-size: 9px; background: #fef3c7; color: #92400e; padding: 2px 5px; border-radius: 2px; font-weight: 600; margin-left: auto; }
+
+        /* MAIN */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: white; }
+        .topbar { padding: 12px 24px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 24px; }
+
+        .board-wrapper { flex: 1; overflow: hidden; display: flex; }
+        .board { flex: 1; overflow-x: auto; overflow-y: hidden; padding: 16px 24px; }
+        .columns { display: flex; gap: 16px; min-width: max-content; height: 100%; }
+        .column { min-width: 360px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+        .column-header { padding: 12px 16px; background: white; border-bottom: 1px solid #e5e7eb; }
+        .column-title { font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+        .column-stats { display: flex; justify-content: space-between; font-size: 12px; color: #6b7280; }
+
+        .cards { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .card { background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; cursor: pointer; transition: all 0.15s; }
+        .card:hover { border-color: #d1d5db; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .card-name { font-size: 12px; font-weight: 600; color: #1f2937; margin-bottom: 4px; }
+        .card-location { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+        .card-value { font-size: 14px; font-weight: 700; color: #1f2937; margin-bottom: 8px; }
+
+        /* FEATURE PANEL */
+        .feature-panel { position: fixed; right: 0; top: 0; bottom: 0; width: 380px; background: white; border-left: 1px solid #e5e7eb; box-shadow: -4px 0 12px rgba(0,0,0,0.1); z-index: 999; display: none; flex-direction: column; animation: slideIn 0.3s ease-out; }
+        .feature-panel.open { display: flex; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+        .panel-header { padding: 24px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: flex-start; }
+        .panel-header-content h2 { font-size: 18px; font-weight: 600; color: #1f2937; margin: 0 0 4px 0; }
+        .panel-header-content p { font-size: 12px; color: #6b7280; margin: 0; }
+        .close-btn { background: none; border: none; font-size: 24px; color: #6b7280; cursor: pointer; padding: 0; width: 28px; height: 28px; }
+        .close-btn:hover { color: #1f2937; }
+
+        .panel-tabs { display: flex; border-bottom: 2px solid #e5e7eb; padding: 0 24px; }
+        .panel-tab { flex: 1; padding: 12px 0; background: none; border: none; cursor: pointer; font-size: 13px; font-weight: 500; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; }
+        .panel-tab:hover { color: #1f2937; }
+        .panel-tab.active { color: #3b82f6; border-bottom-color: #3b82f6; }
+
+        .panel-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
+        .tab-pane { display: none; }
+        .tab-pane.active { display: block; }
+
+        .feature { padding: 16px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 12px; transition: all 0.15s; }
+        .feature:hover { border-color: #d1d5db; background: #f9fafb; }
+        .feature-header { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+        .feature-icon { font-size: 18px; flex-shrink: 0; margin-top: 2px; }
+        .feature-title { font-size: 14px; font-weight: 600; color: #1f2937; margin: 0; }
+        .feature-desc { font-size: 12px; color: #6b7280; margin: 6px 0 12px 26px; line-height: 1.4; }
+        .feature-buttons { display: flex; gap: 8px; margin-left: 26px; }
+        .btn { flex: 1; padding: 8px 12px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+        .btn-activate { background: #3b82f6; color: white; }
+        .btn-activate:hover { background: #2563eb; }
+        .btn-learn { background: white; color: #6b7280; border: 1px solid #d1d5db; }
+        .btn-learn:hover { background: #f9fafb; }
+        .btn-opt-in { background: #f3f4f6; color: #6b7280; border: 1px solid #d1d5db; }
+        .btn-opt-in:hover { background: white; }
+
+        .toggle-btn { position: fixed; bottom: 24px; right: 24px; z-index: 998; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(59, 130, 244, 0.3); transition: all 0.2s; }
+        .toggle-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(59, 130, 244, 0.4); }
+        .toggle-btn.hidden { display: none; }
+
+        /* MODALS */
+        .overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 3000; align-items: center; justify-content: center; }
+        .overlay.active { display: flex; }
+        .modal { background: white; border-radius: 12px; padding: 32px; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); }
+        .modal h2 { font-size: 20px; font-weight: 700; color: #1f2937; margin: 0 0 20px 0; }
+        .modal-buttons { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+        .modal-btn { padding: 10px 20px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .modal-btn.primary { background: #3b82f6; color: white; }
+        .modal-btn.primary:hover { background: #2563eb; }
+        .modal-btn.secondary { background: #f3f4f6; color: #6b7280; }
+        .modal-btn.secondary:hover { background: #e5e7eb; }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 600; color: #1f2937; margin-bottom: 8px; font-size: 14px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-family: inherit; font-size: 14px; }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 244, 0.1); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .job-mockup { background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .job-mockup h3 { color: #1f2937; margin-bottom: 12px; }
+        .job-info { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+        .job-buttons { display: flex; gap: 8px; }
+        .job-btn { flex: 1; padding: 10px; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+        .job-btn.highlight { background: #dbeafe; color: #1e40af; border-color: #3b82f6; }
+        .job-arrow { text-align: center; color: #3b82f6; font-weight: 600; margin-top: 8px; }
+
+        .line-items { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .line-item { background: white; border: 1px solid #e5e7eb; border-radius: 6px; padding: 12px; margin-bottom: 12px; }
+        .line-item-row { display: grid; grid-template-columns: 1fr 100px 100px 60px; gap: 8px; }
+        .line-item-row input { padding: 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 12px; }
+        .remove-btn { padding: 6px 12px; background: #fee2e2; color: #991b1b; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 11px; }
+        .add-btn { width: 100%; padding: 12px; border: 2px dashed #d1d5db; background: white; color: #3b82f6; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+        .summary { background: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0; }
+        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-total { display: flex; justify-content: space-between; padding: 12px 0; margin-top: 12px; padding-top: 12px; border-top: 2px solid #3b82f6; font-weight: 700; color: #1f2937; font-size: 16px; }
+
+        .success { text-align: center; }
+        .success-icon { font-size: 48px; margin: 20px 0; }
+        .success h2 { color: #059669; }
+
+        .preview-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); z-index: 4000; align-items: center; justify-content: center; }
+        .preview-overlay.active { display: flex; }
+        .preview-modal { background: white; border-radius: 12px; padding: 32px; max-width: 700px; max-height: 80vh; overflow-y: auto; box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3); }
+        .preview-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb; }
+        .preview-header h2 { font-size: 22px; font-weight: 700; color: #1f2937; margin: 0; }
+        .preview-close { background: none; border: none; font-size: 28px; color: #6b7280; cursor: pointer; padding: 0; width: 32px; height: 32px; }
+        .preview-content { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 24px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.8; color: #374151; white-space: pre-wrap; word-wrap: break-word; }
+        .preview-buttons { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+        .preview-btn { padding: 10px 20px; border-radius: 6px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; }
+        .preview-btn.primary { background: #3b82f6; color: white; }
+        .preview-btn.primary:hover { background: #2563eb; }
+        .preview-btn.secondary { background: #f3f4f6; color: #6b7280; }
+        .preview-btn.secondary:hover { background: #e5e7eb; }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="company">
+                    <div class="avatar">RC</div>
+                    <div>
+                        <div class="company-name">Roofing Co.</div>
+                        <div class="company-email">demo@roofing.co</div>
+                    </div>
+                </div>
+            </div>
+            <div class="menu">
+                <div class="menu-section">
+                    <div class="menu-item active">🏠 Home</div>
+                    <div class="menu-item">📋 Jobs</div>
+                    <div class="menu-item">📅 Calendar</div>
+                    <div class="menu-item">📊 Performance</div>
+                </div>
+                <div class="menu-section">
+                    <div class="menu-title">Tools</div>
+                    <div class="menu-item">📐 Instant Estimator</div>
+                    <div class="menu-item">📏 Measurements</div>
+                    <div class="menu-item">📄 Proposals</div>
+                    <div class="menu-item">✍️ PDF Signer</div>
+                    <div class="menu-item">📦 Material Orders</div>
+                    <div class="menu-item">🛠️ Work Orders</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main">
+            <div class="topbar">Board View</div>
+            <div class="board-wrapper">
+                <div class="board">
+                    <div class="columns">
+                        <div class="column">
+                            <div class="column-header">
+                                <div class="column-title">New Lead</div>
+                                <div class="column-stats"><span>(0)</span><span>$0.00</span></div>
+                            </div>
+                            <div class="cards"></div>
+                        </div>
+                        <div class="column">
+                            <div class="column-header">
+                                <div class="column-title">In Progress</div>
+                                <div class="column-stats"><span>(2)</span><span>$42,500</span></div>
+                            </div>
+                            <div class="cards">
+                                <div class="card">
+                                    <div class="card-name">Smith Residence</div>
+                                    <div class="card-location">123 Main St, Denver, CO</div>
+                                    <div class="card-value">$22,500</div>
+                                </div>
+                                <div class="card">
+                                    <div class="card-name">Johnson Roofing</div>
+                                    <div class="card-location">456 Oak Ave, Boulder, CO</div>
+                                    <div class="card-value">$20,000</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="column-header">
+                                <div class="column-title">Review</div>
+                                <div class="column-stats"><span>(1)</span><span>$15,750</span></div>
+                            </div>
+                            <div class="cards">
+                                <div class="card">
+                                    <div class="card-name">Davis Roof Repair</div>
+                                    <div class="card-location">789 Pine Rd, Fort Collins, CO</div>
+                                    <div class="card-value">$15,750</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="column">
+                            <div class="column-header">
+                                <div class="column-title">Complete</div>
+                                <div class="column-stats"><span>(0)</span><span>$0.00</span></div>
+                            </div>
+                            <div class="cards"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEATURE SUGGESTIONS PANEL -->
+                <div class="feature-panel" id="featurePanel">
+                    <div class="panel-header">
+                        <div class="panel-header-content">
+                            <h2>Feature Suggestions</h2>
+                            <p>Personalized for your account • Updated weekly</p>
+                        </div>
+                        <button class="close-btn" onclick="togglePanel()">×</button>
+                    </div>
+                    <div class="panel-tabs">
+                        <button class="panel-tab active" onclick="switchTab('live')">Live</button>
+                        <button class="panel-tab" onclick="switchTab('coming')">Coming Soon</button>
+                    </div>
+                    <div class="panel-content">
+                        <div id="live" class="tab-pane active">
+                            <div class="feature">
+                                <div class="feature-header"><span class="feature-icon">✓</span><h3 class="feature-title">Work Orders</h3></div>
+                                <p class="feature-desc">Track crew progress & sign-offs across your jobs</p>
+                                <div class="feature-buttons">
+                                    <button class="btn btn-activate">Activate</button>
+                                    <button class="btn btn-learn">Learn</button>
+                                </div>
+                            </div>
+                            <div class="feature">
+                                <div class="feature-header"><span class="feature-icon">✓</span><h3 class="feature-title">Change Orders</h3></div>
+                                <p class="feature-desc">Prevent scope disputes with formal change order tracking</p>
+                                <div class="feature-buttons">
+                                    <button class="btn btn-activate">Activate</button>
+                                    <button class="btn btn-learn">Learn</button>
+                                </div>
+                            </div>
+                            <div class="feature">
+                                <div class="feature-header"><span class="feature-icon">📊</span><h3 class="feature-title">Performance Dashboard</h3></div>
+                                <p class="feature-desc">Real-time metrics on your portfolio health</p>
+                                <div class="feature-buttons">
+                                    <button class="btn btn-activate">Activate</button>
+                                    <button class="btn btn-learn">Learn</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="coming" class="tab-pane">
+                            <div class="feature">
+                                <div class="feature-header"><span class="feature-icon">📸</span><h3 class="feature-title">Photo Capture & Markup</h3></div>
+                                <p class="feature-desc">Mobile photo capture with annotations (Q4 2026)</p>
+                                <div class="feature-buttons"><button class="btn btn-opt-in">Join Beta</button></div>
+                            </div>
+                            <div class="feature">
+                                <div class="feature-header"><span class="feature-icon">📱</span><h3 class="feature-title">Mobile Job Management</h3></div>
+                                <p class="feature-desc">Full job management on mobile devices (Q4 2026)</p>
+                                <div class="feature-buttons"><button class="btn btn-opt-in">Join Beta</button></div>
+                            </div>
+                            <div class="feature">
+                                <div class="feature-header"><span class="feature-icon">📅</span><h3 class="feature-title">Production Scheduling</h3></div>
+                                <p class="feature-desc">Crew capacity planning & scheduling (Q1 2027)</p>
+                                <div class="feature-buttons"><button class="btn btn-opt-in">Join Beta</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ACTIVATION MODAL -->
+    <div class="overlay" id="activationOverlay">
+        <div class="modal">
+            <h2 id="activationTitle">Activate Change Orders?</h2>
+            <p id="activationDescription">This will enable Change Orders and show you a guided walkthrough of how to create and manage scope changes.</p>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeActivationModal()">Cancel</button>
+                <button class="modal-btn primary" onclick="confirmActivation()">Activate & Tour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- WALKTHROUGH STEPS -->
+    <div class="overlay" id="walkthroughOverlay">
+        <div class="modal">
+            <!-- Step 1: Location -->
+            <div id="step-1" class="walkthrough-step" style="display: flex; flex-direction: column;">
+                <h2>Where are Change Orders?</h2>
+                <p style="color: #6b7280;">Change Orders live in the Proposals section. Here's how you access them:</p>
+                <div class="job-mockup">
+                    <h3>Sample Project - Residential Roof</h3>
+                    <div class="job-info">📍 123 Sample St, Demo City | 💰 $18,500 | Status: In Progress</div>
+                    <div class="job-buttons">
+                        <button class="job-btn">View Job</button>
+                        <button class="job-btn">Update Status</button>
+                        <button class="job-btn highlight">📄 Proposals</button>
+                    </div>
+                    <div class="job-arrow">↑ Click here to access Change Orders</div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn secondary" onclick="closeWalkthrough()">Skip</button>
+                    <button class="modal-btn primary" onclick="nextWalkthroughStep()">I understand →</button>
+                </div>
+            </div>
+
+            <!-- Step 2: Form -->
+            <div id="step-2" class="walkthrough-step" style="display: none; flex-direction: column;">
+                <h2>Create a New Change Order</h2>
+                <div class="form-group">
+                    <label>Change Order Title *</label>
+                    <input type="text" id="coTitle" placeholder="e.g., Structural repair under eaves">
+                </div>
+                <div class="form-group">
+                    <label>Description *</label>
+                    <textarea id="coDescription" placeholder="Describe the scope change..." rows="3"></textarea>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date Identified *</label>
+                        <input type="date" id="coDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Reason *</label>
+                        <select id="coReason">
+                            <option value="">Select...</option>
+                            <option value="Hidden damage">Hidden damage found</option>
+                            <option value="Customer upgrade">Customer upgrade request</option>
+                            <option value="Additional work">Additional work required</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn secondary" onclick="previousWalkthroughStep()">← Back</button>
+                    <button class="modal-btn primary" onclick="validateStep2()">Next step →</button>
+                </div>
+            </div>
+
+            <!-- Step 3: Line Items -->
+            <div id="step-3" class="walkthrough-step" style="display: none; flex-direction: column;">
+                <h2>Add Line Items</h2>
+                <p style="color: #6b7280;">Add each scope change with description, quantity, and cost:</p>
+                <div class="line-items" id="lineItemsContainer"></div>
+                <button class="add-btn" onclick="addLineItem()">+ Add Line Item</button>
+                <div class="modal-buttons">
+                    <button class="modal-btn secondary" onclick="previousWalkthroughStep()">← Back</button>
+                    <button class="modal-btn primary" onclick="nextWalkthroughStep()">Review →</button>
+                </div>
+            </div>
+
+            <!-- Step 4: Review -->
+            <div id="step-4" class="walkthrough-step" style="display: none; flex-direction: column;">
+                <h2>Review Your Change Order</h2>
+                <div class="summary">
+                    <div style="margin-bottom: 16px;">
+                        <strong style="display: block; font-size: 12px; text-transform: uppercase; color: #6b7280; margin-bottom: 8px;">Change Order Details</strong>
+                        <div class="summary-row"><span>Title:</span><span id="summaryTitle">-</span></div>
+                        <div class="summary-row"><span>Description:</span><span id="summaryDesc">-</span></div>
+                        <div class="summary-row"><span>Reason:</span><span id="summaryReason">-</span></div>
+                    </div>
+                    <div>
+                        <strong style="display: block; font-size: 12px; text-transform: uppercase; color: #6b7280; margin-bottom: 8px;">Line Items</strong>
+                        <div id="summaryLineItems"></div>
+                        <div class="summary-total">
+                            <span>Total Cost:</span>
+                            <span id="summaryTotal">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn secondary" onclick="previousWalkthroughStep()">← Back</button>
+                    <button class="modal-btn primary" onclick="createChangeOrder()">Create Change Order ✓</button>
+                </div>
+            </div>
+
+            <!-- Step 5: Success -->
+            <div id="step-5" class="walkthrough-step success" style="display: none; flex-direction: column;">
+                <div class="success-icon">✓</div>
+                <h2 style="color: #059669;">Change Order Created!</h2>
+                <p style="color: #6b7280;">Your change order has been successfully created.</p>
+                <div class="summary">
+                    <div class="summary-row"><span>Change Order ID:</span><span><strong>CO-2026-001</strong></span></div>
+                    <div class="summary-row"><span>Total Cost:</span><span id="finalTotal">$0.00</span></div>
+                    <div class="summary-row"><span>Status:</span><span style="background: #fef3c7; color: #92400e; padding: 4px 12px; border-radius: 4px; font-weight: 600; display: inline-block;">Pending Review</span></div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn primary" onclick="previewChangeOrder()">👁️ Preview</button>
+                    <button class="modal-btn secondary" onclick="downloadChangeOrder()">📥 Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PREVIEW MODAL -->
+    <div class="preview-overlay" id="previewOverlay">
+        <div class="preview-modal">
+            <div class="preview-header">
+                <h2>Change Order Preview</h2>
+                <button class="preview-close" onclick="closePreview()">×</button>
+            </div>
+            <div class="preview-content" id="previewContent"></div>
+            <div class="preview-buttons">
+                <button class="preview-btn secondary" onclick="closePreview()">Close</button>
+                <button class="preview-btn primary" onclick="downloadAfterPreview()">📥 Download</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOGGLE BUTTON -->
+    <button class="toggle-btn" id="toggleBtn" onclick="togglePanel()">Feature Suggestions</button>
+
+    <script>
+        let currentStep = 1;
+        let data = { title: '', desc: '', reason: '', date: '', lineItems: [] };
+
+        function togglePanel() {
+            const panel = document.getElementById('featurePanel');
+            const btn = document.getElementById('toggleBtn');
+            panel.classList.toggle('open');
+            btn.classList.toggle('hidden');
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function showActivationModal(featureName) {
+            if (featureName === 'change-orders') {
+                document.getElementById('activationOverlay').classList.add('active');
+            }
+        }
+
+        function closeActivationModal() {
+            document.getElementById('activationOverlay').classList.remove('active');
+        }
+
+        function confirmActivation() {
+            closeActivationModal();
+            startWalkthrough();
+        }
+
+        function startWalkthrough() {
+            data = { title: '', desc: '', reason: '', date: '', lineItems: [] };
+            goToStep(1);
+        }
+
+        function goToStep(step) {
+            document.querySelectorAll('.walkthrough-step').forEach(s => s.style.display = 'none');
+            document.getElementById(`step-${step}`).style.display = 'flex';
+            document.getElementById('walkthroughOverlay').classList.add('active');
+            currentStep = step;
+            if (step === 3) {
+                document.getElementById('lineItemsContainer').innerHTML = '';
+                addLineItem();
+            }
+        }
+
+        function nextWalkthroughStep() {
+            if (currentStep === 3) {
+                const items = document.querySelectorAll('.line-item');
+                data.lineItems = [];
+                let totalCost = 0;
+                items.forEach(item => {
+                    const desc = item.querySelector('.line-item-row input:first-child').value.trim();
+                    const qty = parseFloat(item.querySelector('.line-item-row input:nth-child(2)').value) || 0;
+                    const cost = parseFloat(item.querySelector('.line-item-row input:nth-child(3)').value) || 0;
+                    if (desc && qty > 0 && cost > 0) {
+                        const itemTotal = qty * cost;
+                        data.lineItems.push({ desc, qty, cost, itemTotal });
+                        totalCost += itemTotal;
+                    }
+                });
+                if (data.lineItems.length === 0) { alert('Please add at least one line item'); return; }
+                document.getElementById('summaryTitle').textContent = data.title;
+                document.getElementById('summaryDesc').textContent = data.desc;
+                document.getElementById('summaryReason').textContent = data.reason;
+                document.getElementById('summaryTotal').textContent = '$' + totalCost.toFixed(2);
+                document.getElementById('finalTotal').textContent = '$' + totalCost.toFixed(2);
+                const lineItemsHtml = data.lineItems.map(item => `<div class="summary-row"><span>${item.desc} (${item.qty}x)</span><span>$${item.itemTotal.toFixed(2)}</span></div>`).join('');
+                document.getElementById('summaryLineItems').innerHTML = lineItemsHtml;
+                goToStep(4);
+            } else if (currentStep < 5) {
+                goToStep(currentStep + 1);
+            }
+        }
+
+        function previousWalkthroughStep() {
+            if (currentStep > 1) goToStep(currentStep - 1);
+        }
+
+        function closeWalkthrough() {
+            document.getElementById('walkthroughOverlay').classList.remove('active');
+        }
+
+        function validateStep2() {
+            const title = document.getElementById('coTitle').value.trim();
+            const desc = document.getElementById('coDescription').value.trim();
+            const reason = document.getElementById('coReason').value;
+            if (!title || !desc || !reason) { alert('Please fill in all fields'); return; }
+            data.title = title;
+            data.desc = desc;
+            data.reason = reason;
+            data.date = document.getElementById('coDate').value;
+            goToStep(3);
+        }
+
+        function addLineItem() {
+            const id = 'item-' + Date.now();
+            const html = `
+                <div class="line-item" id="${id}">
+                    <div class="line-item-row">
+                        <input type="text" placeholder="Description">
+                        <input type="number" value="1" min="1" placeholder="Qty">
+                        <input type="number" value="0" min="0" step="0.01" placeholder="Cost">
+                        <button class="remove-btn" onclick="document.getElementById('${id}').remove()">Remove</button>
+                    </div>
+                </div>
+            `;
+            document.getElementById('lineItemsContainer').insertAdjacentHTML('beforeend', html);
+        }
+
+        function createChangeOrder() {
+            goToStep(5);
+        }
+
+        function generateChangeOrderContent() {
+            const total = data.lineItems.reduce((sum, item) => sum + item.itemTotal, 0);
+            let content = `CHANGE ORDER #CO-2026-001\n\n`;
+            content += `Project: Sample Project - Residential Roof\n`;
+            content += `Date: ${new Date().toLocaleDateString()}\n\n`;
+            content += `DETAILS\n`;
+            content += `Title: ${data.title}\n`;
+            content += `Description: ${data.desc}\n`;
+            content += `Reason: ${data.reason}\n\n`;
+            content += `LINE ITEMS\n`;
+            content += `-------------------------------------------\n`;
+            data.lineItems.forEach((item, idx) => {
+                content += `${idx + 1}. ${item.desc}\n   Qty: ${item.qty} x $${item.cost.toFixed(2)} = $${item.itemTotal.toFixed(2)}\n`;
+            });
+            content += `\nTOTAL: $${total.toFixed(2)}\n`;
+            content += `Status: Pending Review\n`;
+            return content;
+        }
+
+        function previewChangeOrder() {
+            document.getElementById('previewContent').textContent = generateChangeOrderContent();
+            document.getElementById('previewOverlay').classList.add('active');
+        }
+
+        function closePreview() {
+            document.getElementById('previewOverlay').classList.remove('active');
+        }
+
+        function downloadAfterPreview() {
+            const content = generateChangeOrderContent();
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'Change-Order-CO-2026-001.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            closePreview();
+        }
+
+        function downloadChangeOrder() {
+            previewChangeOrder();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const btns = document.querySelectorAll('.feature .btn-activate');
+            btns.forEach((btn, idx) => {
+                if (idx === 1) {
+                    btn.addEventListener('click', () => showActivationModal('change-orders'));
+                }
+            });
+        });
+    </script>
+</body>
+</html>
